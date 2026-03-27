@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rolls.app — Coming Soon</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --text: #ffffff;
+      --text-soft: rgba(255,255,255,.78);
+      --text-faint: rgba(255,255,255,.50);
+      --red: #ff3b30;
+      --red-hot: #ff4d42;
+      --shadow: 0 30px 100px rgba(0,0,0,.55);
+      --radius-pill: 999px;
+      --max-width: 1440px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background-color: #050306; /* Yhtenäinen tumma pohjaväri */
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, sans-serif;
+      color: var(--text);
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .site {
+      position: relative;
+      min-height: 100vh;
+      overflow-x: hidden;
+      isolation: isolate;
+      /* Taustan gradientit poistettu täältä, jotta tausta ei rikkoudu skrollatessa */
+    }
+
+    /* Taustakerros, joka pysyy paikoillaan */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at center, rgba(255,59,48,0.04), transparent 30%); /* Pehmeä yleishehku */
+    }
+
+    .grain {
+      position: absolute;
+      inset: -50%;
+      opacity: .08;
+      background-image: radial-gradient(circle, rgba(255,255,255,.5) 0.5px, transparent 0.5px);
+      background-size: 6px 6px;
+      mix-blend-mode: soft-light;
+      animation: grainMove 12s steps(8) infinite;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: .8;
+      will-change: transform;
+      /* Hiiren sijainti luetaan CSS-muuttujista */
+      transform: translate3d(var(--px, 0px), var(--py, 0px), 0);
+    }
+
+    .orb.orb-1 {
+      width: 340px; height: 340px;
+      top: 12%; left: 50%; margin-left: -170px;
+      background: radial-gradient(circle, rgba(255,70,58,.65) 0%, rgba(255,40,40,.18) 42%, transparent 72%);
+      animation: floatA 8s ease-in-out infinite alternate;
+    }
+
+    .orb.orb-2 {
+      width: 520px; height: 520px;
+      bottom: -40px; left: 8%;
+      background: radial-gradient(circle, rgba(255,70,58,.24) 0%, rgba(255,40,40,.10) 38%, transparent 72%);
+      animation: floatB 11s ease-in-out infinite alternate;
+    }
+
+    .orb.orb-3 {
+      width: 480px; height: 480px;
+      bottom: -60px; right: 6%;
+      background: radial-gradient(circle, rgba(255,70,58,.20) 0%, rgba(255,40,40,.08) 36%, transparent 72%);
+      animation: floatC 12s ease-in-out infinite alternate;
+    }
+
+    .mist {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255,40,40,.06), transparent 25%),
+        radial-gradient(circle at 22% 88%, rgba(255,40,40,.08), transparent 20%),
+        radial-gradient(circle at 78% 86%, rgba(255,40,40,.07), transparent 20%);
+      filter: blur(24px);
+      opacity: .85;
+    }
+
+    .vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,.40) 70%, rgba(0,0,0,.85) 100%);
+    }
+
+    .particles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: rgba(255,70,58,.95);
+      box-shadow: 0 0 12px rgba(255,70,58,.7);
+      opacity: .75;
+      animation: spark linear infinite;
+    }
+
+    /* layout */
+    .page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 28px 28px 80px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+    }
+
+    .brand-mini {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.82);
+    }
+
+    .brand-mini-ring {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 3px solid var(--red);
+      border-top-color: #ff7f73;
+      border-bottom-color: #ff7f73;
+      box-shadow: 0 0 10px rgba(255,59,48,.55);
+      transform: rotate(-20deg);
+    }
+
+    .hero {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .hero-inner {
+      width: min(100%, 820px);
+      position: relative;
+    }
+
+    .logo-wrap {
+      position: relative;
+      width: 240px; height: 240px;
+      margin: 0 auto 26px;
+      display: grid;
+      place-items: center;
+    }
+
+    .logo-halo {
+      position: absolute;
+      inset: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,70,58,.22), transparent 68%);
+      filter: blur(22px);
+      animation: pulseGlow 3.6s ease-in-out infinite;
+    }
+
+    /* Iso yhtenäinen rinkula */
+    .rolls-ring {
+      position: relative;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      border: 18px solid var(--red);
+      border-top-color: #ff8075;
+      border-bottom-color: #ff5f53;
+      transform: rotate(-22deg);
+      filter: drop-shadow(0 0 20px rgba(255,59,48,.60))
+              drop-shadow(0 0 50px rgba(255,59,48,.28));
+      animation: ringFloat 5.5s ease-in-out infinite;
+    }
+
+    .headline {
+      margin: 0;
+      font-size: clamp(54px, 7vw, 94px);
+      line-height: .96;
+      letter-spacing: -.06em;
+      font-weight: 800;
+      color: #fff;
+      text-wrap: balance;
+      text-shadow: 0 8px 30px rgba(0,0,0,.35);
+    }
+
+    .subheadline {
+      margin: 18px auto 0;
+      max-width: 620px;
+      font-size: clamp(18px, 2vw, 28px);
+      line-height: 1.18;
+      letter-spacing: -.03em;
+      font-weight: 500;
+      color: var(--text-soft);
+      text-wrap: balance;
+    }
+
+    .soon-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 28px auto 0;
+      padding: 10px 16px;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04), var(--shadow);
+      color: rgba(255,255,255,.82);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .soon-dot {
+      width: 8px; height: 8px;
+      border-radius: 999px;
+      background: var(--red);
+      box-shadow: 0 0 10px rgba(255,59,48,.8);
+      animation: blinkDot 1.5s ease-in-out infinite;
+    }
+
+    .brand-lockup {
+      margin-top: 34px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-lockup .mini-ring {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      border: 7px solid var(--red);
+      border-top-color: #ff7f73;
+      border-bottom-color: #ff7f73;
+      transform: rotate(-22deg);
+      box-shadow: 0 0 16px rgba(255,59,48,.45);
+    }
+
+    .brand-wordmark {
+      font-size: clamp(34px, 4vw, 72px);
+      line-height: 1;
+      letter-spacing: -.06em;
+      font-weight: 800;
+      color: var(--red-hot);
+      text-shadow: 0 0 28px rgba(255,59,48,.16);
+    }
+
+    .supporting-copy {
+      margin-top: 18px;
+      font-size: 14px;
+      color: var(--text-faint);
+      letter-spacing: -.01em;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: center;
+      padding-top: 32px;
+      padding-bottom: 24px;
+    }
+
+    .footer-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,.78);
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .age-badge {
+      width: 48px; height: 48px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.28);
+      color: rgba(255,255,255,.94);
+      font-size: 17px;
+      font-weight: 700;
+      background: rgba(255,255,255,.02);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* decorative bottom */
+    .bottom-scene {
+      position: fixed;
+      inset: auto 0 0 0;
+      height: 34vh;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .chip {
+      position: absolute;
+      filter: blur(4px);
+      opacity: .75;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.14) 0 26%, rgba(255,59,48,.18) 27% 36%, rgba(0,0,0,.35) 37% 100%);
+      box-shadow: 0 0 30px rgba(255,59,48,.16);
+    }
+
+    .chip.c1 { width: 130px; height: 130px; left: -10px; bottom: -10px; }
+    .chip.c2 { width: 120px; height: 120px; left: 120px; bottom: 16px; filter: blur(3px); }
+    .chip.c3 { width: 140px; height: 140px; right: -8px; bottom: -16px; }
+    .chip.c4 { width: 90px; height: 90px; right: 120px; bottom: 10px; }
+
+    .roulette-blur {
+      position: absolute;
+      filter: blur(8px);
+      opacity: .65;
+      width: 260px; height: 260px;
+      right: -40px; bottom: -40px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at center, rgba(255,255,255,.05), transparent 35%),
+        conic-gradient(from 0deg, rgba(255,59,48,.26), rgba(0,0,0,.18), rgba(255,59,48,.26), rgba(0,0,0,.18), rgba(255,59,48,.24));
+      box-shadow: 0 0 50px rgba(255,59,48,.14);
+    }
+
+    .card-blur {
+      position: absolute;
+      filter: blur(6px);
+      opacity: .30;
+      width: 120px; height: 160px;
+      left: 52%; bottom: 12px;
+      transform: rotate(18deg);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.03));
+      box-shadow: 0 0 22px rgba(255,59,48,.08);
+    }
+
+    @keyframes pulseGlow {
+      0%   { transform: scale(.94); opacity: .65; }
+      100% { transform: scale(1.08); opacity: 1; }
+    }
+
+    @keyframes ringFloat {
+      0%   { transform: rotate(-22deg) translateY(0px); }
+      50%  { transform: rotate(-22deg) translateY(-8px); }
+      100% { transform: rotate(-22deg) translateY(0px); }
+    }
+
+    @keyframes blinkDot {
+      0%, 100% { opacity: .6; transform: scale(.9); }
+      50%       { opacity: 1; transform: scale(1.15); }
+    }
+
+    @keyframes grainMove {
+      0%   { transform: translate(0,0); }
+      25%  { transform: translate(2%, -1%); }
+      50%  { transform: translate(-1%, 2%); }
+      75%  { transform: translate(1%, 1%); }
+      100% { transform: translate(0,0); }
+    }
+
+    /* CSS muuttujat lisätty animaatioihin yhdistettynä */
+    @keyframes floatA {
+      0%   { transform: translate3d(var(--px, 0px), var(--py, 0px), 0) scale(1); }
+      100% { transform: translate3d(var(--px, 0px), calc(var(--py, 0px) + 12px), 0) scale(1.06); }
+    }
+
+    @keyframes floatB {
+      0%   { transform: translate3d(var(--px, 0px), var(--py, 0px), 0); }
+      100% { transform: translate3d(calc(var(--px, 0px) + 22px), calc(var(--py, 0px) - 14px), 0); }
+    }
+
+    @keyframes floatC {
+      0%   { transform: translate3d(var(--px, 0px), var(--py, 0px), 0); }
+      100% { transform: translate3d(calc(var(--px, 0px) - 18px), calc(var(--py, 0px) - 12px), 0); }
+    }
+
+    @keyframes spark {
+      0%   { transform: translate3d(0,0,0) scale(.8); opacity: 0; }
+      15%  { opacity: .95; }
+      100% { transform: translate3d(var(--tx),var(--ty),0) scale(1.15); opacity: 0; }
+    }
+
+    @media (max-width: 900px) {
+      .page { padding: 18px 18px 80px; }
+      .logo-wrap { width: 200px; height: 200px; margin-bottom: 20px; }
+      .rolls-ring { width: 140px; height: 140px; border-width: 14px; }
+      .headline { font-size: clamp(42px, 10vw, 72px); }
+      .subheadline { max-width: 500px; }
+      .bottom-scene { height: 24vh; }
+    }
+
+    @media (max-width: 640px) {
+      .header { min-height: 42px; }
+      .brand-mini { font-size: 11px; letter-spacing: .14em; }
+      .logo-wrap { width: 176px; height: 176px; margin-bottom: 18px; }
+      .rolls-ring { width: 120px; height: 120px; border-width: 12px; }
+      .headline { font-size: 40px; line-height: .98; }
+      .subheadline { font-size: 18px; line-height: 1.24; }
+      .brand-wordmark { font-size: 44px; }
+      .footer-note { font-size: 14px; }
+      .age-badge { width: 42px; height: 42px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="site">
+    <div class="bg-layer" aria-hidden="true">
+      <div class="grain"></div>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="mist"></div>
+      <div class="particles" id="particles"></div>
+      <div class="vignette"></div>
+    </div>
+
+    <div class="bottom-scene" aria-hidden="true">
+      <div class="chip c1"></div>
+      <div class="chip c2"></div>
+      <div class="chip c3"></div>
+      <div class="chip c4"></div>
+      <div class="roulette-blur"></div>
+      <div class="card-blur"></div>
+    </div>
+
+    <div class="page">
+      <header class="header">
+        <div class="brand-mini">
+          <span class="brand-mini-ring"></span>
+          <span>Rolls.app</span>
+        </div>
+      </header>
+
+      <main class="hero">
+        <section class="hero-inner" aria-label="Coming soon">
+          <div class="logo-wrap">
+            <div class="logo-halo"></div>
+            <div class="rolls-ring" aria-hidden="true"></div>
+          </div>
+
+          <div class="soon-badge">
+            <span class="soon-dot"></span>
+            <span>Coming soon</span>
+          </div>
+
+          <h1 class="headline">Find your next<br />slot in seconds.</h1>
+
+          <p class="subheadline">
+            Rolls.app is preparing a faster, cleaner way to discover your next game.
+          </p>
+
+          <div class="brand-lockup" aria-hidden="true">
+            <div class="mini-ring"></div>
+            <div class="brand-wordmark">ROLLS</div>
+          </div>
+
+          <div class="supporting-copy">Early access opening soon</div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="footer-note">
+          <span class="age-badge">18+</span>
+          <span>Play responsibly.</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // Particles
+    const particles = document.getElementById("particles");
+    for (let i = 0; i < 46; i++) {
+      const p = document.createElement("span");
+      p.className = "particle";
+      const size = 2 + Math.random() * 3;
+      p.style.left = (35 + Math.random() * 30) + "%";
+      p.style.top  = (18 + Math.random() * 70) + "%";
+      p.style.width = p.style.height = size + "px";
+      p.style.setProperty("--tx", (Math.random() - 0.5) * 180 + "px");
+      p.style.setProperty("--ty", (-40 - Math.random() * 160) + "px");
+      p.style.animationDuration = (3 + Math.random() * 5) + "s";
+      p.style.animationDelay    = (Math.random() * 6) + "s";
+      p.style.opacity = 0;
+      particles.appendChild(p);
+    }
+
+    // Parallax — tallennetaan arvot suoraan CSS muuttujiin
+    const orbs = document.querySelectorAll(".orb");
+    const factors = [6, 12, 10];
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    let cx = mx, cy = my;
+
+    window.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
+
+    (function loop() {
+      cx += (mx - cx) * 0.04;
+      cy += (my - cy) * 0.04;
+      const px = cx / window.innerWidth  - 0.5;
+      const py = cy / window.innerHeight - 0.5;
+      
+      orbs.forEach((orb, i) => {
+        orb.style.setProperty('--px', `${px * factors[i] * 5}px`);
+        orb.style.setProperty('--py', `${py * factors[i] * 5}px`);
+      });
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
